@@ -478,6 +478,7 @@ std::string SqlGenerator::genS_nation() {
   return nations[distribution(*generator_)];
 }
 
+// 这个筛选已经只需要1/45的数据量了，数据量较少
 std::string SqlGenerator::genS_city() {
   const size_t indent = 9;
   std::vector<std::string> nationsPrefix{"UNITED ST", "CHINA", "UNITED KI", "INDIA", "RUSSIA"};
@@ -919,10 +920,12 @@ std::string SqlGenerator::generateSqlSkewWeight(std::string queryName, std::stri
 
 std::string SqlGenerator::genLo_predicate(bool high) {
   if (high) {
+    // 1/50的数据量
     std::uniform_int_distribution<int> distribution(15,35);
     auto quantity = distribution(*generator_);
     return "lo_quantity = " + std::to_string(quantity);
   } else {
+    // 8/10的数据量
     std::uniform_int_distribution<int> distribution(3,6);
     auto lowDiscount = distribution(*generator_);
     auto highDiscount = lowDiscount + 1;
@@ -1001,6 +1004,7 @@ std::string SqlGenerator::genSkewWeightQuery3(std::string skewLo_predicate, std:
 }
 
 std::string SqlGenerator::genSkewWeightQuery4(std::string skewLo_predicate, std::string lo_predicate, std::string aggColumn) {
+  // 这个筛选条件也筛掉了很多，大概只剩了1/500
   auto p_brand1 = "MFGR#" + std::to_string(genP_brand1_num());
   return fmt::format(
           "select p_size, {}\n"
