@@ -1,2 +1,2 @@
 main: GenerateSqlFile.cpp SqlGenerator.cpp SqlGenerator.h
-	g++ -std=c++17 GenerateSqlFile.cpp SqlGenerator.cpp -lfmt
+	g++ -std=c++17 -o SQLgenerator.out GenerateSqlFile.cpp SqlGenerator.cpp -lfmt

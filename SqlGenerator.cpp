@@ -499,12 +499,14 @@ std::string SqlGenerator::genLo_predicate() {
   auto kind = distribution(*generator_);
   switch (kind % numKinds) {
     case 0: {
+      // lineorder 表中 discount 项共有 1-10 十个值，每个值的数据条数相近，大约5000条/值
       int lo_discountFullRange = 10;    // from SSB definition
       int lo_discountRange = lo_discountFullRange * lineorderRowSelectivity_;
       auto lo_discountLeft = genLo_discount(0, lo_discountFullRange - lo_discountRange);
       return "(lo_discount between " + std::to_string(lo_discountLeft) + " and " + std::to_string(lo_discountLeft + lo_discountRange) + ")";
     }
     case 1: {
+      // lineorder 表中 quantity 项共有 1-50 十个值，每个值的数据条数相近，大约1200条/值
       int lo_quantityFullRange = 50;    // from SSB definition
       int lo_quantityRange = lo_quantityFullRange * lineorderRowSelectivity_;
       auto lo_quantityLeft = genLo_quantity(0, lo_quantityFullRange - lo_quantityRange);
@@ -556,6 +558,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkew(float skewness, int 
 
   for (size_t kind = 0; kind < possibilities.size(); kind++) {
     auto numThisKind = round(possibilities[kind] * ((double) batchSize));
+    // ssb中 lo_orderdate 项的数据从1992-1998年，一共7年，每年的数据条数相近
     std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + kind) * 10000 + 101,
             (1992 + kind) * 10000 + 1231);
 
