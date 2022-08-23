@@ -21,7 +21,19 @@ make
             但其实只在第一次生成10条query的时候倾斜，后续query都是在复制前十条指令，访问的数据很重复
             并且生成10条query的时候7个年份的访问按zipfian分布，query太少其实并没有很好的均匀分布
         selectivity的筛选也是有的，所以其实真正访问到的数据量并不多，并且还重复查询
-    ·4 
+    ·4 One Hot Workload 
+            将size*skewness条query生成为同一条指令
+            其他query遍历q2 q3 q4生成均匀的负载
+            两种情况下都是 查询某一年 并且进行selectivity后 的查询（数据量不大）
+            两种特征的查询打乱顺序后写入sql文件
+    ·5 ./SQLgenerator.out  double<hitRatio> double<rowPer> int<nCol>
+        ·hitRatio 表示查询两年（19920101-19931231）中的hitRatio比例的日期的数据
+        ·rowPer 表示查询lo_quantity列中的rowPer比例的行的数据
+        ·nCol 表示查询返回结果是lineorder表的几列数据（共17列）
+        该负载没怎么看懂，共三条查询语句：
+            同时筛选date和quantity -- 只筛选quantity -- 都不进行筛选
+        可能是模拟第一次查询进行部分缓存，后面两次都是部分缓存、部分下推的场景
+
 
 ·size: 生成的ssb query的数量
     其中，0-size/2 的为warmup query， size/2-size 的为execution query
