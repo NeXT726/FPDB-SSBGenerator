@@ -50,3 +50,20 @@ make
     默认为0.2，含义是每次查询都只涉及20%的数据
     但不同的query语句会在不同的20%数据中进行
     对 lineorder 表中的 discount（1-10） 或 quantity（1-50） 项进行筛选
+
+
+
+问题：
+·下面的sql运行失败：一直在99%，也不报错，不终止：
+select s_city, p_brand, sum(lo_revenue - lo_supplycost) as profit
+from date, customer, supplier, part, lineorder
+where lo_custkey = c_custkey
+  and lo_suppkey = s_suppkey
+  and lo_partkey = p_partkey
+  and lo_orderdate = d_datekey
+  and s_nation = 'INDIA'
+  and p_category = 'MFGR#34'
+  and (lo_discount between 5 and 7)
+  and (lo_orderdate between toDate('1998-01-01') and toDate('1998-12-31'))
+group by s_city, p_brand
+order by s_city, p_brand;

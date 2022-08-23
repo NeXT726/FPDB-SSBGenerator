@@ -156,7 +156,7 @@ std::string SqlGenerator::genQuery2_1() {
   auto s_region = genS_region();
   auto lo_predicate = genLo_predicate();
   return fmt::format(
-          "select sum(lo_revenue), d_year, p_brand1\n"
+          "select sum(lo_revenue), d_year, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
@@ -164,8 +164,8 @@ std::string SqlGenerator::genQuery2_1() {
           "  and p_category = '{}'\n"
           "  and s_region = '{}'\n"
           "  and {}\n"
-          "group by d_year, p_brand1\n"
-          "order by d_year, p_brand1;\n",
+          "group by d_year, p_brand\n"
+          "order by d_year, p_brand;\n",
           p_category,
           s_region,
           lo_predicate
@@ -179,16 +179,16 @@ std::string SqlGenerator::genQuery2_2() {
   auto s_region = genS_region();
   auto lo_predicate = genLo_predicate();
   return fmt::format(
-          "select sum(lo_revenue), d_year, p_brand1\n"
+          "select sum(lo_revenue), d_year, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
           "  and lo_suppkey = s_suppkey\n"
-          "  and (p_brand1 between '{}' and '{}')\n"
+          "  and (p_brand between '{}' and '{}')\n"
           "  and s_region = '{}'\n"
           "  and {}\n"
-          "group by d_year, p_brand1\n"
-          "order by d_year, p_brand1;\n",
+          "group by d_year, p_brand\n"
+          "order by d_year, p_brand;\n",
           p_brand1_0,
           p_brand1_1,
           s_region,
@@ -201,16 +201,16 @@ std::string SqlGenerator::genQuery2_3() {
   auto s_region = genS_region();
   auto lo_predicate = genLo_predicate();
   return fmt::format(
-          "select sum(lo_revenue), d_year, p_brand1\n"
+          "select sum(lo_revenue), d_year, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
           "  and lo_suppkey = s_suppkey\n"
-          "  and p_brand1 = '{}'\n"
+          "  and p_brand = '{}'\n"
           "  and s_region = '{}'\n"
           "  and {}\n"
-          "group by d_year, p_brand1\n"
-          "order by d_year, p_brand1;\n",
+          "group by d_year, p_brand\n"
+          "order by d_year, p_brand;\n",
           p_brand1,
           s_region,
           lo_predicate
@@ -383,7 +383,7 @@ std::string SqlGenerator::genQuery4_3() {
   auto p_category = "MFGR#" + std::to_string(genP_category_num());
   auto lo_predicate = genLo_predicate();
   return fmt::format(
-          "select d_year, s_city, p_brand1, sum(lo_revenue - lo_supplycost) as profit\n"
+          "select d_year, s_city, p_brand, sum(lo_revenue - lo_supplycost) as profit\n"
           "from date, customer, supplier, part, lineorder\n"
           "where lo_custkey = c_custkey\n"
           "  and lo_suppkey = s_suppkey\n"
@@ -393,8 +393,8 @@ std::string SqlGenerator::genQuery4_3() {
           "  and (d_year = {} or d_year = {})\n"
           "  and p_category = '{}'\n"
           "  and {}\n"
-          "group by d_year, s_city, p_brand1\n"
-          "order by d_year, s_city, p_brand1;\n",
+          "group by d_year, s_city, p_brand\n"
+          "order by d_year, s_city, p_brand;\n",
           s_nation,
           d_year1,
           d_year2,
@@ -560,8 +560,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkew(float skewness, int 
   for (size_t kind = 0; kind < possibilities.size(); kind++) {
     auto numThisKind = round(possibilities[kind] * ((double) batchSize));
     // ssb中 lo_orderdate 项的数据从1992-1998年，一共7年，每年的数据条数相近
-    std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + kind) * 10000 + 101,
-            (1992 + kind) * 10000 + 1231);
+    std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'{}-01-01\') and toDate(\'{}-12-31\'))", 1992 + kind, 1992 + kind);
 
     for (int i = 0; i < numThisKind; i++) {
       int skewQueryIndex = distribution2(*generator_);
@@ -576,8 +575,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkew(float skewness, int 
     return std::vector<std::string>(queries.begin(), queries.begin() + batchSize);
   } else {
     while (queries.size() < batchSize) {
-      std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992) * 10000 + 101,
-              (1992) * 10000 + 1231);
+      std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'1992-01-01\') and toDate(\'1992-12-31\')))");
       int skewQueryIndex = distribution2(*generator_);
       auto skewQueryName = skewQueryNames[skewQueryIndex];
       queries.emplace_back(generateSqlSkew(skewQueryName, skewLo_predicate));
@@ -616,7 +614,7 @@ std::string SqlGenerator::genSkewQuery2_1(std::string skewLo_predicate, std::str
   auto p_category = "MFGR#" + std::to_string(genP_category_num());
   auto s_region = genS_region();
   return fmt::format(
-          "select sum({}), d_yearmonthnum, p_brand1\n"
+          "select sum({}), d_yearmonthnum, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
@@ -625,8 +623,8 @@ std::string SqlGenerator::genSkewQuery2_1(std::string skewLo_predicate, std::str
           "  and s_region = '{}'\n"
           "  and {}\n"
           "  and {}\n"
-          "group by d_yearmonthnum, p_brand1\n"
-          "order by d_yearmonthnum, p_brand1;\n",
+          "group by d_yearmonthnum, p_brand\n"
+          "order by d_yearmonthnum, p_brand;\n",
           aggColumn,
           p_category,
           s_region,
@@ -641,17 +639,17 @@ std::string SqlGenerator::genSkewQuery2_2(std::string skewLo_predicate, std::str
   auto p_brand1_1 = "MFGR#" + std::to_string(p_brand1_num + 4);
   auto s_region = genS_region();
   return fmt::format(
-          "select sum({}), d_yearmonthnum, p_brand1\n"
+          "select sum({}), d_yearmonthnum, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
           "  and lo_suppkey = s_suppkey\n"
-          "  and (p_brand1 between '{}' and '{}')\n"
+          "  and (p_brand between '{}' and '{}')\n"
           "  and s_region = '{}'\n"
           "  and {}\n"
           "  and {}\n"
-          "group by d_yearmonthnum, p_brand1\n"
-          "order by d_yearmonthnum, p_brand1;\n",
+          "group by d_yearmonthnum, p_brand\n"
+          "order by d_yearmonthnum, p_brand;\n",
           aggColumn,
           p_brand1_0,
           p_brand1_1,
@@ -665,17 +663,17 @@ std::string SqlGenerator::genSkewQuery2_3(std::string skewLo_predicate, std::str
   auto p_brand1 = "MFGR#" + std::to_string(genP_brand1_num());
   auto s_region = genS_region();
   return fmt::format(
-          "select sum({}), d_yearmonthnum, p_brand1\n"
+          "select sum({}), d_yearmonthnum, p_brand\n"
           "from lineorder, date, part, supplier\n"
           "where lo_orderdate = d_datekey\n"
           "  and lo_partkey = p_partkey\n"
           "  and lo_suppkey = s_suppkey\n"
-          "  and p_brand1 = '{}'\n"
+          "  and p_brand = '{}'\n"
           "  and s_region = '{}'\n"
           "  and {}\n"
           "  and {}\n"
-          "group by d_yearmonthnum, p_brand1\n"
-          "order by d_yearmonthnum, p_brand1;\n",
+          "group by d_yearmonthnum, p_brand\n"
+          "order by d_yearmonthnum, p_brand;\n",
           aggColumn,
           p_brand1,
           s_region,
@@ -830,7 +828,7 @@ std::string SqlGenerator::genSkewQuery4_3(std::string skewLo_predicate, std::str
   auto s_nation = genS_nation();
   auto p_category = "MFGR#" + std::to_string(genP_category_num());
   return fmt::format(
-          "select d_yearmonthnum, s_city, p_brand1, sum({}) as profit\n"
+          "select d_yearmonthnum, s_city, p_brand, sum({}) as profit\n"
           "from date, customer, supplier, part, lineorder\n"
           "where lo_custkey = c_custkey\n"
           "  and lo_suppkey = s_suppkey\n"
@@ -840,8 +838,8 @@ std::string SqlGenerator::genSkewQuery4_3(std::string skewLo_predicate, std::str
           "  and p_category = '{}'\n"
           "  and {}\n"
           "  and {}\n"
-          "group by d_yearmonthnum, s_city, p_brand1\n"
-          "order by d_yearmonthnum, s_city, p_brand1;\n",
+          "group by d_yearmonthnum, s_city, p_brand\n"
+          "order by d_yearmonthnum, s_city, p_brand;\n",
           aggColumn,
           s_nation,
           p_category,
@@ -870,8 +868,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkewWeight(float skewness
 
   for (size_t kind = 0; kind < possibilities.size(); kind++) {
     auto numThisKind = round(possibilities[kind] * ((double) batchSize));
-    std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + kind) * 10000 + 101,
-                                               (1992 + kind) * 10000 + 1231);
+    std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'{}-01-01\') and toDate(\'{}-12-31\'))", 1992 + kind, 1992 + kind);
 
     for (int i = 0; i < numThisKind; i++) {
       int skewWeightQueryIndex = distribution2(*generator_);
@@ -886,8 +883,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkewWeight(float skewness
     return std::vector<std::string>(queries.begin(), queries.begin() + batchSize);
   } else {
     while (queries.size() < batchSize) {
-      std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1993) * 10000 + 101,
-                                                 (1993) * 10000 + 1231);
+      std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'1993-01-01\') and toDate(\'1993-12-31\'))");
       int skewWeightQueryIndex = distribution2(*generator_);
       auto skewWeightQueryName = skewWeightQueryNames[skewWeightQueryIndex];
       queries.emplace_back(generateSqlSkewWeight(skewWeightQueryName, skewLo_predicate, true));
@@ -1010,7 +1006,7 @@ std::string SqlGenerator::genSkewWeightQuery4(std::string skewLo_predicate, std:
           "select p_size, {}\n"
           "from part, lineorder\n"
           "where lo_partkey = p_partkey\n"
-          "  and p_brand1 = '{}'\n"
+          "  and p_brand = '{}'\n"
           "  and {}\n"
           "  and {}\n"
           "group by p_size;\n",
@@ -1036,8 +1032,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkewRecurring(float skewn
 
   for (size_t kind = 0; kind < possibilities.size(); kind++) {
     auto numThisKind = round(possibilities[kind] * ((double) batchSize));
-    std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + kind) * 10000 + 101,
-                                               (1992 + kind) * 10000 + 1231);
+    std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'{}-01-01\') and toDate(\'{}-12-31\'))", 1992 + kind, 1992 + kind);
     for (int i = 0; i < numThisKind; i++) {
       skewLo_predicates.emplace_back(skewLo_predicate);
     }
@@ -1048,7 +1043,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchSkewRecurring(float skewn
   }
 
   while (skewLo_predicates.size() < queryNames.size()) {
-    skewLo_predicates.emplace_back("(lo_orderdate between 19930101 and 19931231)");
+    skewLo_predicates.emplace_back("(lo_orderdate between toDate(\'1993-01-01\') and toDate(\'1993-12-31\'))");
   }
 
   std::random_device rd;
@@ -1077,8 +1072,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchHotQuery(float percentage
   std::uniform_int_distribution<int> distribution1(0, n - 1);
   std::uniform_int_distribution<int> distribution2(0,skewQueryNames.size() - 1);
   int skewLo_predicateIndex = distribution1(*generator_);
-  std::string skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + skewLo_predicateIndex) * 10000 + 101,
-                                             (1992 + skewLo_predicateIndex) * 10000 + 1231);
+  std::string skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'{}-01-01\') and toDate(\'{}-12-31\'))", 1992 + skewLo_predicateIndex, 1992 + skewLo_predicateIndex);
   int skewQueryIndex = distribution2(*generator_);
   auto skewQueryName = skewQueryNames[skewQueryIndex];
 
@@ -1091,8 +1085,7 @@ std::vector<std::string> SqlGenerator::generateSqlBatchHotQuery(float percentage
   auto restNum = batchSize - (int)(batchSize*percentage);
   for (int i = 0; i < restNum; i++) {
     skewLo_predicateIndex = i % n;
-    skewLo_predicate = fmt::format("(lo_orderdate between {} and {})", (1992 + skewLo_predicateIndex) * 10000 + 101,
-                                   (1992 + skewLo_predicateIndex) * 10000 + 1231);
+    skewLo_predicate = fmt::format("(lo_orderdate between toDate(\'{}-01-01\') and toDate(\'{}-12-31\'))", 1992 + skewLo_predicateIndex, 1992 + skewLo_predicateIndex);
     skewQueryIndex = distribution2(*generator_);
     skewQueryName = skewQueryNames[skewQueryIndex];
     queries.emplace_back(generateSqlSkew(skewQueryName, skewLo_predicate));
@@ -1136,18 +1129,18 @@ std::vector<std::string> SqlGenerator::generateSqlForMathModel(double hitRatio, 
   date.tm_mon = 1 - 1;
   date.tm_year = 1992 - 1900;
   DatePlusDays(&date, days);
-  int endDate = (date.tm_year + 1900) * 10000 + (date.tm_mon + 1) * 100 + date.tm_mday;
-  std::cout << "End date: " << endDate << std::endl;
 
   // query for caching
   std::string sql1 = fmt::format(
           "select {}\n"
           "from lineorder\n"
           "where ({})"
-          "  and (lo_orderdate between 19920101 and {});\n",
+          "  and (lo_orderdate between toDate(\'1992-01-01\') and toDate(\'{}-{}-{}\'));\n",
           columns,
           predicate,
-          endDate
+          date.tm_year + 1900,
+          date.tm_mon + 1,
+          date.tm_mday
   );
 
   // query for measurement
@@ -1155,7 +1148,7 @@ std::vector<std::string> SqlGenerator::generateSqlForMathModel(double hitRatio, 
           "select {}\n"
           "from lineorder\n"
           "where ({})"
-          "  and (lo_orderdate between 19920101 and 19931231);\n",
+          "  and (lo_orderdate between toDate(\'1992-01-01\') and toDate(\'1993-12-31\'));\n",
           columns,
           predicate
   );
@@ -1164,7 +1157,7 @@ std::vector<std::string> SqlGenerator::generateSqlForMathModel(double hitRatio, 
   std::string sql3 = fmt::format(
           "select {}\n"
           "from lineorder\n"
-          "where (lo_orderdate between 19920101 and 19931231);\n",
+          "where (lo_orderdate between toDate(\'1992-01-01\') and toDate(\'1993-12-31\'));\n",
           columns
   );
 
