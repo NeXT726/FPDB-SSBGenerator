@@ -905,15 +905,21 @@ std::string SqlGenerator::generateSqlSkewWeight(std::string queryName, std::stri
   std::string aggColumn = high? "sum(lo_revenue), sum(lo_supplycost), sum(lo_linenumber)" : "sum(lo_extendedprice), sum(lo_ordtotalprice)";
 
   switch (queryNameEnum) {
+    //增加 s_city=* 的条件，只在1/45的数据量下查询
     case SkewWeightQuery1: return genSkewWeightQuery1(skewLo_predicate, lo_predicate, aggColumn);
+    //增加 s_city=* 的条件，只在1/45的数据量下查询
     case SkewWeightQuery2: return genSkewWeightQuery2(skewLo_predicate, lo_predicate, aggColumn);
+    //增加 c_city=* 的条件，只在1/45的数据量下查询
     case SkewWeightQuery3: return genSkewWeightQuery3(skewLo_predicate, lo_predicate, aggColumn);
+    //增加 p_brand=* 的条件，只在1/500的数据量下查询
     case SkewWeightQuery4: return genSkewWeightQuery4(skewLo_predicate, lo_predicate, aggColumn);
     default:
       throw std::runtime_error("Unknown skew query name: " + queryName);
   }
 }
 
+// high==1 1/50数据量下查询
+// high==0 8/10数据量下查询
 std::string SqlGenerator::genLo_predicate(bool high) {
   if (high) {
     // 1/50的数据量
