@@ -24,9 +24,9 @@ SqlGenerator::SqlGenerator() {
   queryNameMap_.emplace("query3_2", Query3_2);
   queryNameMap_.emplace("query3_3", Query3_3);
   queryNameMap_.emplace("query3_4", Query3_4);
-  queryNameMap_.emplace("query4_1", Query4_1);
-  queryNameMap_.emplace("query4_2", Query4_2);
-  queryNameMap_.emplace("query4_3", Query4_3);
+  // queryNameMap_.emplace("query4_1", Query4_1);
+  // queryNameMap_.emplace("query4_2", Query4_2);
+  // queryNameMap_.emplace("query4_3", Query4_3);
 
 
   skewQueryNameMap_.emplace("skewQuery2_1", SkewQuery2_1);
@@ -36,14 +36,14 @@ SqlGenerator::SqlGenerator() {
   skewQueryNameMap_.emplace("skewQuery3_2", SkewQuery3_2);
   skewQueryNameMap_.emplace("skewQuery3_3", SkewQuery3_3);
   skewQueryNameMap_.emplace("skewQuery3_4", SkewQuery3_4);
-  skewQueryNameMap_.emplace("skewQuery4_1", SkewQuery4_1);
-  skewQueryNameMap_.emplace("skewQuery4_2", SkewQuery4_2);
-  skewQueryNameMap_.emplace("skewQuery4_3", SkewQuery4_3);
+  // skewQueryNameMap_.emplace("skewQuery4_1", SkewQuery4_1);
+  // skewQueryNameMap_.emplace("skewQuery4_2", SkewQuery4_2);
+  // skewQueryNameMap_.emplace("skewQuery4_3", SkewQuery4_3);
 
   skewWeightQueryNameMap_.emplace("skewWeightQuery1", SkewWeightQuery1);
   skewWeightQueryNameMap_.emplace("skewWeightQuery2", SkewWeightQuery2);
   skewWeightQueryNameMap_.emplace("skewWeightQuery3", SkewWeightQuery3);
-  skewWeightQueryNameMap_.emplace("skewWeightQuery4", SkewWeightQuery4);
+  // skewWeightQueryNameMap_.emplace("skewWeightQuery4", SkewWeightQuery4);
 }
 
 std::vector<std::string> SqlGenerator::generateSqlBatch(int batchSize) {
@@ -1026,8 +1026,9 @@ std::string SqlGenerator::genSkewWeightQuery4(std::string skewLo_predicate, std:
 
 std::vector<std::string> SqlGenerator::generateSqlBatchSkewRecurring(float skewness) {
   std::vector<std::string> queryNames{"skewQuery2_1", "skewQuery2_2", "skewQuery2_3",
-                                      "skewQuery3_1", "skewQuery3_2", "skewQuery3_3", "skewQuery3_4",
-                                      "skewQuery4_1", "skewQuery4_2", "skewQuery4_3"};
+                                      "skewQuery3_1", "skewQuery3_2", "skewQuery3_3", "skewQuery3_4"
+                                      // "skewQuery4_1", "skewQuery4_2", "skewQuery4_3"
+                                      };
   std::vector<std::string> queries;
   const auto batchSize = queryNames.size();
 
